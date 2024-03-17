@@ -17,13 +17,13 @@ class TestTokenize:
         assert "rust.md:1" in result.stdout
         assert "r1.md:0" in result.stdout
 
-    # def test_tokenize_help(self):
-    #     result = runner.invoke(
-    #         app,
-    #         [
-    #             "tokenize",
-    #             "--help",
-    #         ],
-    #     )
-    #     # print(result.stdout)
-    #     assert result.exit_code == 0
+    def test_tokenize_help(self):
+        result = runner.invoke(
+            app,
+            [
+                "tokenize",
+                "--help",
+            ],
+        )
+        # print(result.stdout)
+        assert result.exit_code == 0

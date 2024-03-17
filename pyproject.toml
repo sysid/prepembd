@@ -11,6 +11,7 @@ dependencies = [
     "unstructured>=0.11.8",
     "nltk>=3.8.1",
     "typer>=0.9.0",
+    "markdown>=3.6",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
@@ -31,10 +32,17 @@ dev = [
     "bump-my-version>=0.19.0",
     "mypy>=1.9.0",
     "isort>=5.13.2",
+    "ruff>=0.3.3",
 ]
 
+[tool.pdm.build]
+excludes = ["./**/.git"]
+package-dir = "src"
+includes = ["src/prepembd"]
+source-includes = ["tests", "CHANGELOG.md", "LICENSE", "README.md", "tox.ini"]
+
 [project.scripts]
-tokenize = "prepembd.bin.tokenize:app"
+prepembd = "prepembd.bin.tokenize:app"
 
 [tool.bumpversion]
 current_version = "0.1.1"
@@ -75,12 +83,6 @@ filename = "pyproject.toml"
 
 [[tool.bumpversion.files]]
 filename = "src/prepembd/__init__.py"
-
-[tool.pdm.build]
-excludes = ["./**/.git"]
-package-dir = "src"
-includes = ["src/prepembd"]
-source-includes = ["tests", "CHANGELOG.md", "LICENSE", "README.md", "tox.ini"]
 
 [tool.pytest.ini_options]
 markers = [

@@ -2,7 +2,12 @@ import json
 import logging
 from pathlib import Path
 
+import tiktoken
 import typer
+from langchain_text_splitters import MarkdownTextSplitter
+
+from prepembd.lib.helper import remove_excessive_dots, strip_quote_prefixes
+from prepembd.lib.path import scan_directory
 
 """
 jina-embeddings-v2-small-en is an English, monolingual embedding model supporting 8192 sequence length. It is based on a Bert architecture
@@ -42,15 +47,29 @@ def process_md_file(
     """
     if (directory / md_file).is_symlink():  # skip duplicated files
         return
-    html_content = parse_markdown_to_html(directory / md_file)
-    text_without_code = remove_code_blocks(html_content)
-    chunks = split_into_chunks_with_tiktoken(
-        text_without_code, max_chunk_size=max_chunk_size
-    )
 
-    for i, chunk in enumerate(chunks):
+    md_content = (directory / md_file).read_text(encoding="utf-8", errors="ignore")
+    md_content = strip_quote_prefixes(md_content)
+    md_content = remove_excessive_dots(md_content)
+
+    markdown_splitter = MarkdownTextSplitter.from_tiktoken_encoder(
+        "cl100k_base", chunk_size=max_chunk_size, chunk_overlap=200
+    )
+    encoding = tiktoken.get_encoding("cl100k_base")
+    docs = markdown_splitter.create_documents([md_content])
+
+    for doc in docs:
+        word_tokens = encoding.encode(doc.page_content)
+        word_token_length = len(word_tokens)
+        assert word_token_length < max_chunk_size
+
+    for i, doc in enumerate(docs):
+        assert (
+            len(encoding.encode(doc.page_content)) < max_chunk_size
+        ), f"Chunk {i} too large: {len(encoding.encode(doc.page_content))} tokens."
         id_ = f"{prefix}{str(md_file)}:{i}"
-        json_output = json.dumps({"id": id_, "content": chunk}, ensure_ascii=True)
+        # json_output = json.dumps({"id": id_, "content": chunk.page_content}, ensure_ascii=True)
+        json_output = json.dumps({"id": id_, "content": doc.page_content})
         print(json_output)
 
 
@@ -60,7 +79,10 @@ def main(
     verbose: bool = typer.Option(False, "-v", "--verbose", help="verbosity"),
     version: bool = typer.Option(False, "-V", "--version", help="show version"),
 ):
-    log_fmt = r"%(asctime)-15s %(levelname)-7s %(message)s"
+    log_fmt = (
+        r"%(asctime)-15s %(levelname)s %(name)s %(funcName)s:%(lineno)d %(message)s"
+    )
+    # log_fmt = r"%(asctime)-15s %(levelname)-7s %(message)s"
     if verbose:
         logging.basicConfig(
             format=log_fmt, level=logging.DEBUG, datefmt="%m-%d %H:%M:%S"
@@ -69,9 +91,7 @@ def main(
         logging.basicConfig(
             format=log_fmt, level=logging.INFO, datefmt="%m-%d %H:%M:%S"
         )
-    logging.getLogger("botocore").setLevel(logging.INFO)
-    logging.getLogger("boto3").setLevel(logging.INFO)
-    logging.getLogger("urllib3").setLevel(logging.INFO)
+    logging.getLogger("unstructured").setLevel(logging.WARN)
 
     if ctx.invoked_subcommand is None and version:
         ctx.invoke(print_version)
