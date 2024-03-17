@@ -1,0 +1,115 @@
+[project]
+name = "prepembd"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "sysid", email = "sysid@gmx.de"},
+]
+dependencies = [
+    "langchain>=0.1.12",
+    "tiktoken>=0.6.0",
+    "unstructured>=0.11.8",
+    "nltk>=3.8.1",
+    "typer>=0.9.0",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-cov>=4.1.0",
+    "pre-commit>=3.6.2",
+    "bump-my-version>=0.19.0",
+    "mypy>=1.9.0",
+    "isort>=5.13.2",
+]
+
+[project.scripts]
+tokenize = "prepembd.bin.tokenize:app"
+
+[tool.bumpversion]
+current_version = "0.1.0"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "Bump version: {current_version} → {new_version}"
+commit_args = ""
+
+[tool.bumpversion.file_patterns]
+"src/prepembd/__init__.py" = [
+    {search = "__version__ = '{current_version}'", replace = "__version__ = '{new_version}'"},
+]
+#"README.md" = [
+#    {search = "Current version: {current_version}", replace = "Current version: {new_version}"},
+#]
+"VERSION" = [
+    {search = "{current_version}", replace = "{new_version}"},
+]
+"pyproject.toml" = [
+    {search = "version = {current_version}", replace = "version = {new_version}"},
+]
+
+[[tool.bumpversion.files]]
+filename = "VERSION"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
+[[tool.bumpversion.files]]
+filename = "src/prepembd/__init__.py"
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+package-dir = "src"
+includes = ["src/prepembd"]
+source-includes = ["tests", "CHANGELOG.md", "LICENSE", "README.md", "tox.ini"]
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: marks tests as e2e tests, not to be run in CICD"
+]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.mypy]
+ignore_missing_imports = false
+namespace_packages = true
+
+[tool.coverage.run]
+source = ["src/prepembd"]
+omit = [
+    "tests/*",
+    "**/__main__.py",
+    "**/.venv/*",
+    "**/site-packages/*",
+    "examples/*",
+]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 70
