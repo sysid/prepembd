@@ -1,16 +1,18 @@
 [project]
+# PEP 621 project metadata
+# See https://www.python.org/dev/peps/pep-0621/
 name = "prepembd"
-version = "0.2.0"
+version = "0.3.0"
 description = "prepembd"
 readme = "README.md"
+license = {text = "MIT"}
 authors = [
     {name = "sysid", email = "sysid@gmx.de"},
 ]
 requires-python = ">=3.12"
-license = {text = "MIT"}
 
 dependencies = [
-    "langchain>=0.2.02",
+    "langchain>=0.3.02",
     "tiktoken>=0.6.0",
     "unstructured>=0.11.8",
     "nltk>=3.8.1",
@@ -29,6 +31,7 @@ dev = [
     "mypy>=1.9.0",
     "isort>=5.13.2",
     "ruff>=0.3.3",
+    "build>=1.2.2.post1",
 ]
 
 [project.scripts]
@@ -43,7 +46,7 @@ managed = true
 package = true
 
 [tool.bumpversion]
-current_version = "0.2.0"
+current_version = "0.3.0"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
