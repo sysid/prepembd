@@ -1,10 +1,14 @@
 [project]
 name = "prepembd"
 version = "0.1.1"
-description = "Default template for PDM package"
+description = "prepembd"
+readme = "README.md"
 authors = [
     {name = "sysid", email = "sysid@gmx.de"},
 ]
+requires-python = ">=3.12"
+license = {text = "MIT"}
+
 dependencies = [
     "langchain>=0.1.12",
     "tiktoken>=0.6.0",
@@ -13,18 +17,10 @@ dependencies = [
     "typer>=0.9.0",
     "markdown>=3.6",
 ]
-requires-python = ">=3.10"
-readme = "README.md"
-license = {text = "MIT"}
 
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+[project.optional-dependencies]
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.dev-dependencies]
+[dependency-groups]  # new standard, included by default
 dev = [
     "pytest>=8.1.1",
     "pytest-cov>=4.1.0",
@@ -35,14 +31,16 @@ dev = [
     "ruff>=0.3.3",
 ]
 
-[tool.pdm.build]
-excludes = ["./**/.git"]
-package-dir = "src"
-includes = ["src/prepembd"]
-source-includes = ["tests", "CHANGELOG.md", "LICENSE", "README.md", "tox.ini"]
-
 [project.scripts]
 prepembd = "prepembd.bin.tokenize:app"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+managed = true
+package = true
 
 [tool.bumpversion]
 current_version = "0.1.1"

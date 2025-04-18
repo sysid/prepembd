@@ -5,6 +5,7 @@ SOURCEDIR     = source
 BUILDDIR      = build
 MAKE          = make
 VERSION       = $(shell cat VERSION)
+PACKAGE_NAME  = prepembd
 
 app_root := $(if $(PROJ_DIR),$(PROJ_DIR),$(CURDIR))
 pkg_src =  $(app_root)/src/prepembd
@@ -22,28 +23,23 @@ BUILDING:  ## ############################################################
 .PHONY: build
 build: clean format sort-imports  ## format and build
 	@echo "building"
-	#python -m build
-	pdm build
+	python -m build
 
 .PHONY: publish
 publish:  ## publish
-	pdm publish
-
-.PHONY: upload
-upload:  ## upload to PyPi
-	@echo "upload"
-	#twine upload --verbose dist/*
-	@git log -10 --pretty=format:"%h %aN %ar %d %s" | grep main | grep Bump && \
-		twine upload --verbose dist/* || \
-		echo "Bump Version before trying to upload"
+	@echo "upload to Pypi"
+	twine upload --verbose dist/*
 
 .PHONY: install
 install:  uninstall ## install
-	@pipx install -e .
+	#@pipx install -e .
+	uv tool install -e .
+	#prepemb --install-completion bash
 
 .PHONY: uninstall
 uninstall:  ## uninstall
-	pipx uninstall prepembd
+	#pipx uninstall prepembd
+	-uv tool uninstall $(PACKAGE_NAME)
 
 .PHONY: bump-major
 bump-major:  ## bump-major, tag and push
@@ -81,7 +77,7 @@ create-release:  ## create a release on GitHub via the gh cli
 TESTING:  ## ############################################################
 .PHONY: test-unit
 test-unit:  ## run unit tests
-	pdm run python -m pytest -ra --junitxml=report.xml --cov-config=pyproject.toml --cov-report=xml --cov-report term --cov=$(pkg_src) tests/
+	uv run python -m pytest -ra --junitxml=report.xml --cov-config=pyproject.toml --cov-report=xml --cov-report term --cov=$(pkg_src) tests/
 
 .PHONY: test
 test:  test-unit  ## run all tests

@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Iterable
 
 _log = logging.getLogger(__name__)
 
@@ -24,13 +23,25 @@ def scan_directory(
     all its subdirectories are implicitly excluded as well. For example, if 'excluded_dirs' contains '/path/to/exclude',
     then '/path/to/exclude/subdir1' and '/path/to/exclude/subdir2' are also excluded.
     """
-    if excluded_dirs is None:
-        excluded_dirs = []
-    return [
-        f.relative_to(directory)
-        for f in directory.rglob("*.md")
-        if f.stat().st_size >= min_size  # and f.is_symlink() is False
-        and all(
-            directory / Path(excluded) not in f.parents for excluded in excluded_dirs
-        )
-    ]
+    excluded_dirs = excluded_dirs or []
+
+    excluded_paths = {directory / Path(d) for d in excluded_dirs}
+    results = []
+
+    for f in directory.rglob("*.md"):
+        try:
+            # Skip if under excluded dir
+            if any(excluded in f.parents for excluded in excluded_paths):
+                continue
+
+            # Check file size
+            if f.stat().st_size < min_size:
+                continue
+
+            results.append(f.relative_to(directory))
+        except FileNotFoundError:
+            # File might have been deleted between rglob and stat
+            _log.warning(f"File {f} not found.")
+            continue
+
+    return results
