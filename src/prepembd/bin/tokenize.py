@@ -64,9 +64,9 @@ def process_md_file(
         assert word_token_length < max_chunk_size
 
     for i, doc in enumerate(docs):
-        assert (
-            len(encoding.encode(doc.page_content)) < max_chunk_size
-        ), f"Chunk {i} too large: {len(encoding.encode(doc.page_content))} tokens."
+        assert len(encoding.encode(doc.page_content)) < max_chunk_size, (
+            f"Chunk {i} too large: {len(encoding.encode(doc.page_content))} tokens."
+        )
         id_ = f"{prefix}{str(md_file)}:{i}"
         # json_output = json.dumps({"id": id_, "content": chunk.page_content}, ensure_ascii=True)
         json_output = json.dumps({"id": id_, "content": doc.page_content})

@@ -15,83 +15,31 @@ jobs:
 
     strategy:
       matrix:
-        python: [ '3.10', '3.11', '3.12' ]
+#        python: [ '3.10', '3.11', '3.12' ]
+        python: [ '3.12' ]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: ${{ matrix.python }}
-          cache: true
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install --yes libgl1-mesa-dev
-          pdm lock
-          pdm install --dev
 
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}/src" >> $GITHUB_ENV
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-      - name: Debug directory structure and PYTHONPATH
-        run: |
-          pwd
-          echo $PYTHONPATH
-          tree src/
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
-      - name: Test with pytest
-        run: |
-          pdm run make test-cicd
+      - name: Run tests
+        run: uv run make test
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4.0.2
+        uses: codecov/codecov-action@v5.1.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: sysid/prepembd
-
-  lint:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python: [ '3.10', '3.11', '3.12' ]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: ${{ matrix.python }}
-          cache: true
-
-      - name: Install dependencies
-        run: |
-          pdm lock
-          pdm install --dev
-
-#      - name: mypy
-#        run: |
-#          pdm run mypy --python-version=${{ matrix.python }} src/
-
-      - name: lint
-        run: |
-          pdm run make lint
-
-      - name: format
-        run: |
-          pdm run make format-check
-
-      - name: isort
-        run: |
-          pdm run isort . --check --diff
+          slug: sysid/inka2
